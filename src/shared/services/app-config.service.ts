@@ -1,8 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import * as dotenv from 'dotenv';
-import * as winston from 'winston';
-import * as DailyRotateFile from 'winston-daily-rotate-file';
 
 import { SnakeNamingStrategy } from '../typeorm/strategies/snake-naming.strategy';
 import { ISwaggerConfigInterface } from '../interfaces/swagger-config.interface';
@@ -51,49 +49,6 @@ export class AppConfigService {
       scheme: this.get('SWAGGER_SCHEME') === 'https' ? 'https' : 'http',
       host: this.get('SWAGGER_HOST') || 'localhost',
       port: this.getNumber('SWAGGER_PORT') || 3000,
-    };
-  }
-
-  get winstonConfig(): winston.LoggerOptions {
-    return {
-      transports: [
-        new DailyRotateFile({
-          level: 'debug',
-          filename: `./logs/${this.nodeEnv}/debug-%DATE%.log`,
-          datePattern: 'YYYY-MM-DD',
-          zippedArchive: true,
-          maxSize: '20m',
-          maxFiles: '14d',
-          format: winston.format.combine(
-            winston.format.timestamp(),
-            winston.format.json(),
-          ),
-        }),
-        new DailyRotateFile({
-          level: 'error',
-          filename: `./logs/${this.nodeEnv}/error-%DATE%.log`,
-          datePattern: 'YYYY-MM-DD',
-          zippedArchive: false,
-          maxSize: '20m',
-          maxFiles: '30d',
-          format: winston.format.combine(
-            winston.format.timestamp(),
-            winston.format.json(),
-          ),
-        }),
-        new winston.transports.Console({
-          level: 'debug',
-          handleExceptions: true,
-          format: winston.format.combine(
-            winston.format.colorize(),
-            winston.format.timestamp({
-              format: 'DD-MM-YYYY HH:mm:ss',
-            }),
-            winston.format.simple(),
-          ),
-        }),
-      ],
-      exitOnError: false,
     };
   }
 

@@ -4,15 +4,10 @@ import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
-  PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
-export class AbstractEntity {
-  @PrimaryGeneratedColumn('uuid')
-  @AutoMap()
-  id: string;
-
+export class AbstractWithoutIdEntity {
   @Column({ default: null, nullable: true })
   @AutoMap()
   createdBy?: string | null;

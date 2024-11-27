@@ -1,19 +1,24 @@
 import 'source-map-support/register';
 
-import { ValidationPipe, VersioningType } from '@nestjs/common';
+import {
+  HttpStatus,
+  UnprocessableEntityException,
+  ValidationPipe,
+  VersioningType,
+} from '@nestjs/common';
 import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import {
   ExpressAdapter,
   NestExpressApplication,
 } from '@nestjs/platform-express';
 import * as cors from 'cors';
-import { json } from 'express';
+import { json, Response } from 'express';
 import * as morgan from 'morgan'; // HTTP request logger
+import { Logger } from 'nestjs-pino';
 
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './filters/all-exception.filter';
 import { AppConfigService } from './shared/services/app-config.service';
-import { LoggerService } from './shared/services/logger.service';
 import { SharedModule } from './shared/shared.module';
 import rawBodyMiddleware from './shared/middlewares/raw-body.middleware';
 import { setupSwagger } from './shared/swaggers/setup';
@@ -26,9 +31,10 @@ async function bootstrap() {
   );
   app.setGlobalPrefix('api');
 
-  const loggerService = app.select(SharedModule).get(LoggerService);
+  const loggerService = app.select(SharedModule).get(Logger);
   const configService = app.select(SharedModule).get(AppConfigService);
-  app.useLogger(loggerService);
+  app.useLogger(app.get(Logger));
+
   app.use(
     morgan('combined', {
       stream: {
@@ -52,9 +58,10 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
+      errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
       transform: true,
-      // exceptionFactory: errors => new BadRequestException(errors),
-      // dismissDefaultMessages: true,//TODO: disable in prod (if required)
+      dismissDefaultMessages: false,
+      exceptionFactory: (errors) => new UnprocessableEntityException(errors),
       validationError: {
         target: false,
       },
@@ -70,12 +77,12 @@ async function bootstrap() {
   app.use(json({ limit: '50mb' }));
 
   const httpAdapter = app.get(HttpAdapterHost);
-  app.useGlobalFilters(new AllExceptionsFilter(httpAdapter));
+  app.useGlobalFilters(new AllExceptionsFilter(httpAdapter, loggerService));
 
   if (['development', 'staging'].includes(configService.nodeEnv)) {
     const document = setupSwagger(app, configService.swaggerConfig);
-    // fs.writeFileSync('./swagger.json', JSON.stringify(document));
-    app.use('/swagger.json', (req, res) => {
+
+    app.use('/swagger.json', (_, res: Response) => {
       res.json(document);
     });
   }
@@ -88,7 +95,7 @@ async function bootstrap() {
     methods: 'GET,HEAD,POST,PUT,PATCH,DELETE,OPTIONS',
     credentials: origin !== '*',
     allowedHeaders:
-      'Content-Type, Authorization, X-Requested-With, Accept, X-XSRF-TOKEN, secret, recaptchavalue, sentry-trace, baggage',
+      'Content-Type, Authorization, X-Requested-With, Accept, X-XSRF-TOKEN, secret, sentry-trace, baggage',
   };
   app.use(cors(corsOptions));
 

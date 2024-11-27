@@ -3,9 +3,8 @@ import { AutomapperModule } from '@automapper/nestjs';
 import { Global, Module } from '@nestjs/common';
 import { RateLimiterModule } from 'nestjs-rate-limiter';
 import { AppConfigService } from './services/app-config.service';
-import { LoggerService } from './services/logger.service';
 
-const providers = [...[AppConfigService, LoggerService]];
+const providers = [...[AppConfigService]];
 
 @Global()
 @Module({

@@ -8,8 +8,12 @@ import { AppService } from './app.service';
 import { AppConfigService } from './shared/services/app-config.service';
 import { SharedModule } from './shared/shared.module';
 import { AppLoggerMiddleware } from './shared/middlewares/app.logger.middleware';
+import { LocationModule } from './modules/location/location.module';
+import { LoggerModule } from 'nestjs-pino';
+import { join } from 'path';
+// import pino from 'pino';
 
-const APP_MODULES = [];
+const APP_MODULES = [LocationModule];
 
 @Module({
   imports: [
@@ -19,6 +23,21 @@ const APP_MODULES = [];
       useFactory: (configService: AppConfigService) =>
         configService.typeOrmPostgreSqlConfig,
       inject: [AppConfigService],
+    }),
+    LoggerModule.forRoot({
+      pinoHttp: {
+        name: 'add some name to every JSON line',
+        level: process.env.NODE_ENV !== 'production' ? 'debug' : 'info',
+        transport: {
+          target: 'pino-roll',
+          options: {
+            file: join('logs', 'log'),
+            frequency: 'daily',
+            mkdir: true,
+            dateFormat: 'yyyy-MM-dd',
+          },
+        },
+      },
     }),
     AutomapperModule.forRoot({
       strategyInitializer: classes(),
