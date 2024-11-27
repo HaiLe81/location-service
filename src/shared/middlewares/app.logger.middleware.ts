@@ -1,11 +1,30 @@
-import { Injectable, Logger, NestMiddleware } from '@nestjs/common';
+import { Injectable, NestMiddleware } from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
+import { PinoLogger } from 'nestjs-pino';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class AppLoggerMiddleware implements NestMiddleware {
-  private logger = new Logger('HTTP');
+  constructor(private logger: PinoLogger) {}
 
   use(req: Request, res: Response, next: NextFunction): void {
+    const eventId = this.extractEventId(req.headers['x-event-id']);
+    const traceId = uuidv4();
+    req.headers['X-Request-ID'] = traceId;
+    this.logger.info(`Incoming request ${req.method} ${req.url}`, {
+      eventId,
+      id: traceId,
+    });
+
     next();
+  }
+
+  private extractEventId(
+    eventIdHeader: string | string[] | undefined,
+  ): string | undefined {
+    if (!eventIdHeader) {
+      return undefined;
+    }
+    return Array.isArray(eventIdHeader) ? eventIdHeader[0] : eventIdHeader;
   }
 }
