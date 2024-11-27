@@ -11,7 +11,6 @@ import { AppLoggerMiddleware } from './shared/middlewares/app.logger.middleware'
 import { LocationModule } from './modules/location/location.module';
 import { LoggerModule } from 'nestjs-pino';
 import { join } from 'path';
-// import pino from 'pino';
 
 const APP_MODULES = [LocationModule];
 
