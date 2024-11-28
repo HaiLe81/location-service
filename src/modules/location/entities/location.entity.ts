@@ -13,7 +13,7 @@ import {
 } from 'typeorm';
 import { LocationPrefixEntity } from './location-prefix.entity';
 
-@Entity({ name: 'location', synchronize: true })
+@Entity({ name: 'location', synchronize: false })
 @Unique(['parentId', 'code'])
 @Check(`"code" NOT LIKE '%-%'`)
 export class LocationEntity extends AbstractEntity {

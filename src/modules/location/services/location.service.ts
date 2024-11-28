@@ -96,9 +96,11 @@ export class LocationService {
   async updateLocation(id: string, dto: UpdateLocationDto) {
     try {
       const existLocation = await this.validateLocationExist(id);
+
       if (dto.code) {
         await this.validateLocationCode(dto.code);
       }
+
       if (dto.parentId) {
         await this.validateParentLocation(
           dto.parentId,
@@ -107,6 +109,7 @@ export class LocationService {
       }
 
       const result = await this.dataSource.transaction(async (manager) => {
+        // Check if the code or parentId is updated
         const isUpdatedCode: boolean =
           (dto.code === null || !!dto.code) && dto.code !== existLocation.code;
         const isUpdatedParentId: boolean =
@@ -117,6 +120,7 @@ export class LocationService {
         const locationPrefixRepository =
           manager.getRepository(LocationPrefixEntity);
 
+        // Fetch the existing location prefix
         let locationPrefix = await locationPrefixRepository.findOne({
           where: { id },
         });
@@ -124,10 +128,11 @@ export class LocationService {
           ? `${locationPrefix.prefix}-${existLocation.code}`
           : existLocation.code;
 
+        // Update the existing location with new data
         Object.assign(existLocation, dto);
         const location = await locationRepository.save(existLocation);
 
-        // Check updated parentID to null value
+        // Handle the case when parentId is updated to null
         let newChildLocationPrefix: string = '';
         if (isUpdatedParentId) {
           if (!location.parentId) {
@@ -150,6 +155,7 @@ export class LocationService {
           }
         }
 
+        // Update location prefixes if code or parentId is updated
         if (isUpdatedCode || isUpdatedParentId) {
           await this.updateLocationPrefixes(
             locationPrefixRepository,
