@@ -9,7 +9,7 @@ import {
 } from 'typeorm';
 import { LocationEntity } from './location.entity';
 
-@Entity({ name: 'location_prefix', synchronize: true })
+@Entity({ name: 'location_prefix', synchronize: false })
 @Index(['prefix'])
 export class LocationPrefixEntity extends AbstractWithoutIdEntity {
   @PrimaryColumn({ type: 'uuid' })

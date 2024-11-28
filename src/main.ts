@@ -47,14 +47,6 @@ async function bootstrap() {
 
   app.use(rawBodyMiddleware());
 
-  // app.use(helmet());
-  // app.use(
-  //     rateLimit({
-  //         windowMs: 15 * 60 * 1000, // 15 minutes
-  //         max: 100, // limit each IP to 100 requests per windowMs
-  //     }),
-  // );
-
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -98,12 +90,6 @@ async function bootstrap() {
       'Content-Type, Authorization, X-Requested-With, Accept, X-XSRF-TOKEN, secret, sentry-trace, baggage',
   };
   app.use(cors(corsOptions));
-
-  // if (configService.autoMigration) {
-  //     const dataSource = new DataSource(configService.typeOrmPostgreSqlConfig as PostgresConnectionOptions);
-  //     const connection = await dataSource.initialize();
-  //     await connection.runMigrations();
-  // }
 
   await app.listen(port, host);
 

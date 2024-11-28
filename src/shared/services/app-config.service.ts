@@ -36,10 +36,6 @@ export class AppConfigService {
     return this.get('NODE_ENV') || 'development';
   }
 
-  get autoMigration(): boolean {
-    return this.getBoolean('AUTO_MIGRATION') || false;
-  }
-
   get swaggerConfig(): ISwaggerConfigInterface {
     return {
       path: this.get('SWAGGER_PATH') || '',
@@ -103,7 +99,6 @@ export class AppConfigService {
         max: 200,
       },
       poolSize: 200,
-      migrationsRun: this.autoMigration,
       logging:
         this.nodeEnv === 'development' && this.getBoolean('DATABASE_LOGGING'),
       namingStrategy: new SnakeNamingStrategy(),
@@ -142,41 +137,10 @@ export class AppConfigService {
     };
   }
 
-  get cron() {
-    return Number.parseInt(this.get('CRON'));
-  }
-
-  get enableSeeding() {
-    return this.get('ENABLE_SEEDING') === 'true';
-  }
-
-  get jwtConfig() {
-    return {
-      appSecret: this.get('APP_SECRET'),
-      expire: this.get('JWT_EXPIRE') || '24h',
-      refreshExpire: this.get('JWT_REFRESH_EXPIRE') || '30d',
-    };
-  }
-
-  get dataProvider() {
-    return {
-      apiUrl: this.get('DATA_PROVIDER_API_URL'),
-      authKey: this.get('DATA_PROVIDER_AUTH_KEY'),
-    };
-  }
-
   get apiRateLimit() {
     return {
       POINTS: +(this.get('API_CALL_RATE_LIMIT_POINTS') ?? 5),
       DURATION: +(this.get('API_CALL_RATE_LIMIT_DURATION') ?? 60),
-    };
-  }
-
-  get userRateLimit() {
-    return {
-      POINTS: +(this.get('USER_RATE_LIMIT_POINTS') ?? 5),
-      DURATION: +(this.get('USER_RATE_LIMIT_DURATION') ?? 60),
-      NAME: this.get('USER_RATE_LIMIT_NAME'),
     };
   }
 }

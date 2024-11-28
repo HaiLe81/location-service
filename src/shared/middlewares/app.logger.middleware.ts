@@ -8,12 +8,12 @@ export class AppLoggerMiddleware implements NestMiddleware {
   constructor(private logger: PinoLogger) {}
 
   use(req: Request, res: Response, next: NextFunction): void {
-    const eventId = this.extractEventId(req.headers['x-event-id']);
+    const eventId = this.extractEventId(req.headers['X-EVENT-ID']);
     const traceId = uuidv4();
-    req.headers['X-Request-ID'] = traceId;
+    req.headers['X-TRACE-ID'] = traceId;
     this.logger.info(`Incoming request ${req.method} ${req.url}`, {
       eventId,
-      id: traceId,
+      traceId,
     });
 
     next();
